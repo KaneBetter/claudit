@@ -4,9 +4,9 @@ import {
   countTasksByStatus,
   getTasksCompletedToday,
   getRecentTasks,
-  getTokenUsageToday,
   getTasksByAssignee,
 } from '../services/taskStorage.js';
+import { getTokenUsageToday } from '../services/tokenTracker.js';
 import { getAllAgents } from '../services/agentStorage.js';
 import { isMayorOnline, isMayorEnabled, setMayorEnabled, ensureMayorRunning, stopMayor, getMayorSessionId, getMayorProjectPath, sendToMayor } from '../services/mayorService.js';
 import { isWitnessRunning, getWitnessLastCheck } from '../services/witnessService.js';

@@ -442,6 +442,22 @@ TASK_FAILED: <reason why it could not be completed>
 For major milestones during work, output:
 CHECKPOINT: <what was just completed>`);
   },
+  // v8 → v9: token_usage table for centralized token tracking across all ClaudeProcess instances
+  (db) => {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS token_usage (
+        id TEXT PRIMARY KEY,
+        sessionId TEXT NOT NULL,
+        inputTokens INTEGER NOT NULL DEFAULT 0,
+        outputTokens INTEGER NOT NULL DEFAULT 0,
+        cacheCreationTokens INTEGER NOT NULL DEFAULT 0,
+        cacheReadTokens INTEGER NOT NULL DEFAULT 0,
+        totalTokens INTEGER NOT NULL DEFAULT 0,
+        createdAt TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_token_usage_createdAt ON token_usage(createdAt);
+    `);
+  },
 ];
 
 function runMigrations() {

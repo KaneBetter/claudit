@@ -142,9 +142,11 @@ export async function spawnAgentSession(taskId: string, agentId: string): Promis
 
   // Wire completion/failure handlers
   detector.on('taskComplete', (summary: string) => {
-    console.log(`[sessionManager] Task ${taskId} completed: ${summary}`);
+    const tokenUsage = claudeProcess.getTokenUsage();
+    console.log(`[sessionManager] Task ${taskId} completed (tokens=${tokenUsage}): ${summary}`);
     activeSessions.delete(claudeSessionId);
-    updateTaskSession(taskSession.id, { endedAt: new Date().toISOString(), resultSummary: summary });
+    updateTaskSession(taskSession.id, { endedAt: new Date().toISOString(), resultSummary: summary, tokenUsage });
+    updateTask(taskId, { tokenUsage });
 
     createMessage({
       type: 'event',
@@ -159,9 +161,10 @@ export async function spawnAgentSession(taskId: string, agentId: string): Promis
   });
 
   detector.on('taskFailed', (reason: string) => {
-    console.log(`[sessionManager] Task ${taskId} failed: ${reason}`);
+    const tokenUsage = claudeProcess.getTokenUsage();
+    console.log(`[sessionManager] Task ${taskId} failed (tokens=${tokenUsage}): ${reason}`);
     activeSessions.delete(claudeSessionId);
-    updateTaskSession(taskSession.id, { endedAt: new Date().toISOString() });
+    updateTaskSession(taskSession.id, { endedAt: new Date().toISOString(), tokenUsage });
 
     createMessage({
       type: 'event',
@@ -180,12 +183,13 @@ export async function spawnAgentSession(taskId: string, agentId: string): Promis
   // unlike 'done' which fires after each turn's result event.
   claudeProcess.on('process_exit', () => {
     if (activeSessions.has(claudeSessionId)) {
-      console.log(`[sessionManager] Process exited for session ${claudeSessionId} (no explicit completion signal)`);
+      const tokenUsage = claudeProcess.getTokenUsage();
+      console.log(`[sessionManager] Process exited for session ${claudeSessionId} (tokens=${tokenUsage}, no explicit completion signal)`);
       activeSessions.delete(claudeSessionId);
-      updateTaskSession(taskSession.id, { endedAt: new Date().toISOString() });
+      updateTaskSession(taskSession.id, { endedAt: new Date().toISOString(), tokenUsage });
 
       // Mark as failed so user/Mayor can decide what to do
-      updateTask(taskId, { status: 'failed', completedAt: new Date().toISOString(), errorMessage: 'Agent process exited without TASK_COMPLETE or TASK_FAILED signal' });
+      updateTask(taskId, { status: 'failed', completedAt: new Date().toISOString(), errorMessage: 'Agent process exited without TASK_COMPLETE or TASK_FAILED signal', tokenUsage });
 
       createMessage({
         type: 'event',

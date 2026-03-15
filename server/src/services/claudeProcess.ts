@@ -2,6 +2,7 @@ import { spawn, ChildProcess, execSync } from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import { EventEmitter } from 'events';
+import { recordTokenUsage } from './tokenTracker.js';
 
 // Resolve claude binary path at startup so spawn can find it
 export const CLAUDE_BIN = (() => {
@@ -27,6 +28,10 @@ export class ClaudeProcess extends EventEmitter {
   private userMessageSent = false;
   private resumeReady = false;
   private pendingMessage: string | null = null;
+  private _totalInputTokens = 0;
+  private _totalOutputTokens = 0;
+  private _totalCacheCreationTokens = 0;
+  private _totalCacheReadTokens = 0;
 
   constructor(sessionId: string, projectPath: string, extraArgs?: string[]) {
     super();
@@ -220,7 +225,25 @@ export class ClaudeProcess extends EventEmitter {
         if (event.result && typeof event.result === 'string' && this.lastTextLength === 0) {
           this.emit('assistant_text', event.result);
         }
-        console.log(`[claude] Result: subtype=${event.subtype} result=${String(event.result).slice(0, 100)}`);
+        // Accumulate token usage from each turn's result
+        if (event.usage) {
+          const input = event.usage.input_tokens || 0;
+          const output = event.usage.output_tokens || 0;
+          const cacheCreation = event.usage.cache_creation_input_tokens || 0;
+          const cacheRead = event.usage.cache_read_input_tokens || 0;
+          this._totalInputTokens += input;
+          this._totalOutputTokens += output;
+          this._totalCacheCreationTokens += cacheCreation;
+          this._totalCacheReadTokens += cacheRead;
+          recordTokenUsage({
+            sessionId: this.sessionId,
+            inputTokens: input,
+            outputTokens: output,
+            cacheCreationTokens: cacheCreation,
+            cacheReadTokens: cacheRead,
+          });
+        }
+        console.log(`[claude] Result: subtype=${event.subtype} tokens=${this.getTokenUsage()} result=${String(event.result).slice(0, 100)}`);
         this.emit('done');
         break;
 
@@ -269,6 +292,11 @@ export class ClaudeProcess extends EventEmitter {
     }) + '\n';
     console.log(`[claude] Sending to stdin: ${msg.trim().slice(0, 200)}`);
     this.proc.stdin.write(msg);
+  }
+
+  getTokenUsage(): number {
+    return this._totalInputTokens + this._totalOutputTokens
+      + this._totalCacheCreationTokens + this._totalCacheReadTokens;
   }
 
   isAlive(): boolean {
