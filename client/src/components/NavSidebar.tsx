@@ -17,13 +17,14 @@ interface NavItem {
   label: string;
   icon: React.ElementType;
   bottom?: boolean;
+  mobileHidden?: boolean;
 }
 
 const navItems: NavItem[] = [
   { view: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { view: 'tasks', label: 'Tasks', icon: Layers },
   { view: 'sessions', label: 'Sessions', icon: MessageSquare },
-  { view: 'cron', label: 'Cron Jobs', icon: Workflow },
+  { view: 'cron', label: 'Cron', icon: Workflow, mobileHidden: true },
   { view: 'agents', label: 'Agents', icon: Bot },
   { view: 'settings', label: 'Settings', icon: Settings, bottom: true },
 ];
@@ -61,6 +62,28 @@ function NavButton({ item, active, collapsed, onClick }: {
   );
 }
 
+function MobileNavButton({ item, active, onClick }: {
+  item: NavItem;
+  active: boolean;
+  onClick: () => void;
+}) {
+  const Icon = item.icon;
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 min-w-[48px] rounded-lg transition-colors',
+        active
+          ? 'text-primary'
+          : 'text-muted-foreground active:text-foreground'
+      )}
+    >
+      <Icon size={20} />
+      <span className="text-[10px] leading-tight">{item.label}</span>
+    </button>
+  );
+}
+
 export default function NavSidebar() {
   const view = useUIStore(s => s.view);
   const setView = useUIStore(s => s.setView);
@@ -68,6 +91,27 @@ export default function NavSidebar() {
 
   const mainItems = navItems.filter(i => !i.bottom);
   const bottomItems = navItems.filter(i => i.bottom);
+  const allItems = navItems;
+
+  // Detect if we're in mobile nav bar context (parent has .mobile-nav-bar)
+  // We render differently based on whether we're in the bottom bar or the side nav
+  const isMobileBar = typeof window !== 'undefined' && window.innerWidth < 768;
+
+  if (isMobileBar) {
+    const mobileItems = allItems.filter(i => !i.mobileHidden);
+    return (
+      <div className="flex items-center justify-around px-1 py-1 safe-area-bottom">
+        {mobileItems.map(item => (
+          <MobileNavButton
+            key={item.view}
+            item={item}
+            active={view === item.view}
+            onClick={() => setView(item.view)}
+          />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col justify-between h-full gap-2">

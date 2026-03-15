@@ -3,6 +3,7 @@ import { Toaster } from 'sonner';
 import Layout from './components/Layout';
 import NavSidebar from './components/NavSidebar';
 import { useSystemNotifications } from './hooks/useSystemNotifications';
+import { useURLParams } from './hooks/useURLParams';
 import SessionList from './components/SessionList/SessionList';
 import SessionDetail from './components/SessionDetail/SessionDetail';
 import EmptyState from './components/SessionDetail/EmptyState';
@@ -159,6 +160,7 @@ export default function App() {
   };
 
   useSystemNotifications();
+  useURLParams();
 
   return (
     <>
@@ -174,9 +176,9 @@ export default function App() {
         duration={10000}
         toastOptions={{
           style: {
-            background: 'hsl(20 3% 9% / 0.95)',
-            border: '1px solid hsl(20 3% 14% / 0.4)',
-            color: 'hsl(20 2% 95%)',
+            background: 'hsl(0 0% 100% / 0.95)',
+            border: '1px solid hsl(220 9% 88% / 0.5)',
+            color: 'hsl(220 9% 15%)',
             backdropFilter: 'blur(12px)',
           },
         }}

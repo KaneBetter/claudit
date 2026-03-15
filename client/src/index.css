@@ -4,27 +4,27 @@
 
 @layer base {
   :root {
-    --background: 20 3% 4%;
-    --foreground: 20 2% 95%;
-    --card: 20 3% 7%;
-    --card-foreground: 20 2% 95%;
-    --panel: 20 3% 9%;
-    --panel-elevated: 20 3% 13%;
-    --popover: 20 3% 7%;
-    --popover-foreground: 20 2% 95%;
-    --primary: 18 62% 60%;
+    --background: 0 0% 100%;
+    --foreground: 220 9% 15%;
+    --card: 220 9% 97%;
+    --card-foreground: 220 9% 15%;
+    --panel: 220 9% 96%;
+    --panel-elevated: 0 0% 99%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 9% 15%;
+    --primary: 18 62% 55%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 20 3% 12%;
-    --secondary-foreground: 20 2% 85%;
-    --muted: 20 3% 12%;
-    --muted-foreground: 20 2% 55%;
-    --accent: 20 3% 14%;
-    --accent-foreground: 20 2% 95%;
+    --secondary: 220 9% 94%;
+    --secondary-foreground: 220 9% 30%;
+    --muted: 220 9% 94%;
+    --muted-foreground: 220 6% 44%;
+    --accent: 220 9% 94%;
+    --accent-foreground: 220 9% 15%;
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 20 3% 14%;
-    --input: 20 3% 14%;
-    --ring: 18 62% 60%;
+    --border: 220 9% 88%;
+    --input: 220 9% 88%;
+    --ring: 18 62% 55%;
     --radius: 0.75rem;
   }
 
@@ -44,7 +44,7 @@
   scrollbar-color: transparent transparent;
 }
 *:hover {
-  scrollbar-color: hsl(0 0% 22%) transparent;
+  scrollbar-color: hsl(0 0% 78%) transparent;
 }
 ::-webkit-scrollbar {
   width: 4px;
@@ -58,19 +58,19 @@
   border-radius: 2px;
 }
 *:hover::-webkit-scrollbar-thumb {
-  background: hsl(0 0% 22%);
+  background: hsl(0 0% 78%);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(0 0% 30%);
+  background: hsl(0 0% 68%);
 }
 
 /* Markdown code blocks */
 .prose pre {
-  background: hsl(20 3% 5% / 0.9) !important;
+  background: hsl(220 9% 96%) !important;
   border-radius: 8px;
   padding: 1rem;
   overflow-x: auto;
-  border: 1px solid hsl(20 3% 14% / 0.5);
+  border: 1px solid hsl(220 9% 88% / 0.6);
 }
 
 .prose code {
@@ -78,7 +78,7 @@
 }
 
 .prose p code {
-  background: hsl(20 3% 14% / 0.6);
+  background: hsl(220 9% 94% / 0.8);
   padding: 0.125rem 0.375rem;
   border-radius: 4px;
   font-size: 0.875rem;
@@ -122,7 +122,7 @@
 
 .glow-border > .glow-border-inner {
   border-color: transparent;
-  background: hsl(var(--card)) !important;
+  background: hsl(var(--background)) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
@@ -139,22 +139,22 @@
 
 /* ─── Glass panels ─── */
 .glass-panel {
-  background: hsl(var(--panel) / 0.4);
-  backdrop-filter: blur(48px) saturate(1.2);
-  -webkit-backdrop-filter: blur(48px) saturate(1.2);
-  border: 1px solid hsl(var(--border) / 0.2);
+  background: hsl(var(--panel) / 0.6);
+  backdrop-filter: blur(24px) saturate(1.1);
+  -webkit-backdrop-filter: blur(24px) saturate(1.1);
+  border: 1px solid hsl(var(--border) / 0.4);
 }
 
 .glass-panel-elevated {
-  background: hsl(var(--panel-elevated) / 0.45);
-  backdrop-filter: blur(48px) saturate(1.2);
-  -webkit-backdrop-filter: blur(48px) saturate(1.2);
-  border: 1px solid hsl(var(--border) / 0.12);
+  background: hsl(var(--panel-elevated) / 0.85);
+  backdrop-filter: blur(24px) saturate(1.1);
+  -webkit-backdrop-filter: blur(24px) saturate(1.1);
+  border: 1px solid hsl(var(--border) / 0.3);
 }
 
 /* Subtle gradient cards */
 .gradient-card {
-  background: linear-gradient(135deg, hsl(20 3% 8%) 0%, hsl(20 3% 6%) 100%);
+  background: linear-gradient(135deg, hsl(220 9% 97%) 0%, hsl(220 9% 95%) 100%);
 }
 
 /* Status glow effects */
@@ -180,9 +180,26 @@
 }
 
 .list-item-selected {
-  background: hsl(var(--accent) / 0.5);
+  background: hsl(var(--primary) / 0.1);
 }
 
 .list-item-hover:hover {
-  background: hsl(var(--accent) / 0.3);
+  background: hsl(var(--accent) / 0.5);
+}
+
+/* ─── Mobile safe area ─── */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ─── Mobile overrides ─── */
+@media (max-width: 767px) {
+  .glass-panel,
+  .glass-panel-elevated {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: hsl(var(--background));
+    border: none;
+    border-radius: 0;
+  }
 }

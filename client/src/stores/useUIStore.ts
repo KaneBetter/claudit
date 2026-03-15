@@ -55,8 +55,11 @@ interface UIState {
   sessionDraft: SessionDraft | null;
   taskDraft: TaskDraft | null;
   cronDraft: CronDraft | null;
+  sidebarCollapsed: boolean;
 
   setView: (view: View) => void;
+  setSidebarCollapsed: (collapsed: boolean) => void;
+  toggleSidebar: () => void;
   selectSession: (projectHash: string, sessionId: string, projectPath: string, isNew?: boolean, slug?: string, slugSessionIds?: string[]) => void;
   clearSelected: () => void;
   setSelectedCronTaskId: (id: string | null) => void;
@@ -88,8 +91,11 @@ export const useUIStore = create<UIState>()(
       sessionDraft: null,
       taskDraft: null,
       cronDraft: null,
+      sidebarCollapsed: false,
 
       setView: (view) => set({ view }),
+      setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+      toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
       selectSession: (projectHash, sessionId, projectPath, isNew, slug, slugSessionIds) =>
         set({ selected: { projectHash, sessionId, projectPath, isNew, slug, slugSessionIds } }),
       clearSelected: () => set({ selected: null }),
@@ -119,6 +125,7 @@ export const useUIStore = create<UIState>()(
         sessionDraft: state.sessionDraft,
         taskDraft: state.taskDraft,
         cronDraft: state.cronDraft,
+        sidebarCollapsed: state.sidebarCollapsed,
       }),
     },
   ),

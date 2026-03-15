@@ -11,7 +11,7 @@
     "claude-code"
   ],
   "bin": {
-    "claudit_mobile": "./bin/claudit.js",
+    "claudit": "./bin/claudit.js",
     "claudit-mcp": "./bin/claudit-mcp.js"
   },
   "files": [
