@@ -15,6 +15,7 @@ import AgentList from './components/Agents/AgentList';
 import AgentDetail from './components/Agents/AgentDetail';
 import SettingsPage from './components/Settings/SettingsPage';
 import DashboardPage from './components/Dashboard/DashboardPage';
+import TerminalPage from './components/Terminal/TerminalPage';
 import { useUIStore } from './stores/useUIStore';
 import { useSessionStore } from './stores/useSessionStore';
 import { requestNotificationPermission } from './utils/notifications';
@@ -109,6 +110,8 @@ export default function App() {
         return <TaskList selectedTaskId={selectedTaskId} onSelect={setSelectedTaskId} refreshTrigger={taskRefreshTrigger} />;
       case 'agents':
         return <AgentList selectedAgentId={selectedAgentId} onSelect={setSelectedAgentId} />;
+      case 'terminal':
+        return null;
       case 'settings':
         return null;
       default:
@@ -152,6 +155,8 @@ export default function App() {
             onAgentCreated={(id) => setSelectedAgentId(id)}
           />
         );
+      case 'terminal':
+        return <TerminalPage />;
       case 'settings':
         return <SettingsPage />;
       default:

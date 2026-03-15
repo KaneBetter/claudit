@@ -243,5 +243,6 @@ export interface DashboardData {
     mayorProjectPath?: string;
     witnessRunning: boolean;
     witnessLastCheck: string;
+    ngrokOnline: boolean;
   };
 }

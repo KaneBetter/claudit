@@ -243,6 +243,67 @@ function detachWs(entry: PtyEntry, ws: WebSocket) {
   }
 }
 
+function spawnShellPty(
+  key: string,
+  cwd: string,
+  cols: number,
+  rows: number,
+): PtyEntry {
+  if (!pty) throw new Error('node-pty is not installed. Run: npm install node-pty');
+
+  if (ptyCache.has(key)) {
+    destroyPty(key);
+  }
+
+  const shell = process.env.SHELL || '/bin/bash';
+  console.log(`[pty] Spawning shell: ${shell} in ${cwd} (${cols}x${rows})`);
+
+  const proc = pty.spawn(shell, [], {
+    name: 'xterm-256color',
+    cols: cols || 80,
+    rows: rows || 24,
+    cwd,
+    env: Object.fromEntries(
+      Object.entries({ ...process.env, TERM: 'xterm-256color' })
+        .filter(([k]) => k !== 'CLAUDECODE')
+    ) as Record<string, string>,
+  });
+
+  const entry: PtyEntry = {
+    process: proc,
+    sessionId: key,
+    scrollback: [],
+    attachedWs: null,
+    exited: false,
+    exitCode: null,
+  };
+
+  proc.onData((data: string) => {
+    appendScrollback(entry, data);
+    if (entry.attachedWs) {
+      sendData(entry.attachedWs, data);
+    }
+  });
+
+  proc.onExit(({ exitCode, signal }) => {
+    console.log(`[pty] Shell exited: key=${key} code=${exitCode} signal=${signal}`);
+    entry.exited = true;
+    entry.exitCode = exitCode;
+    if (entry.attachedWs) {
+      sendControl(entry.attachedWs, { type: 'exit', exitCode, signal });
+    }
+    setTimeout(() => {
+      if (ptyCache.get(key) === entry) {
+        ptyCache.delete(key);
+        clearIdleTimer(key);
+      }
+    }, 60_000);
+  });
+
+  ptyCache.set(key, entry);
+  return entry;
+}
+
 // --- Public handler ---
 
 export function handleTerminalConnection(ws: WebSocket) {
@@ -307,6 +368,26 @@ export function handleTerminalConnection(ws: WebSocket) {
           if (entry && !entry.exited) {
             entry.process.write(msg.data);
           }
+        }
+        break;
+      }
+
+      case 'shell': {
+        const key = `shell-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const cwd = os.homedir();
+
+        if (currentKey) {
+          const prev = ptyCache.get(currentKey);
+          if (prev) detachWs(prev, ws);
+        }
+        currentKey = key;
+
+        try {
+          const entry = spawnShellPty(key, cwd, msg.cols || 80, msg.rows || 24);
+          attachWs(entry, ws);
+        } catch (err: any) {
+          console.error(`[pty] Shell spawn error: ${err.message}`);
+          sendControl(ws, { type: 'error', message: err.message });
         }
         break;
       }

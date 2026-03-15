@@ -10,12 +10,13 @@ import { getTokenUsageToday } from '../services/tokenTracker.js';
 import { getAllAgents } from '../services/agentStorage.js';
 import { isMayorOnline, isMayorEnabled, setMayorEnabled, ensureMayorRunning, stopMayor, getMayorSessionId, getMayorProjectPath, sendToMayor } from '../services/mayorService.js';
 import { isWitnessRunning, getWitnessLastCheck } from '../services/witnessService.js';
+import { getNgrokStatus } from '../services/ngrokStatus.js';
 import { getAllMessages, createMessage, getUnreadCount } from '../services/messageStorage.js';
 
 const router = Router();
 
 // GET /api/dashboard — aggregated dashboard data
-router.get('/', (_req, res) => {
+router.get('/', async (_req, res) => {
   try {
     const agents = getAllAgents();
     const activeAgents = agents.map(agent => {
@@ -41,6 +42,7 @@ router.get('/', (_req, res) => {
         mayorProjectPath: getMayorProjectPath(),
         witnessRunning: isWitnessRunning(),
         witnessLastCheck: getWitnessLastCheck(),
+        ...(await getNgrokStatus()),
       },
     };
 

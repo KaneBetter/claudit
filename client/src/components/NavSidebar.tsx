@@ -7,6 +7,7 @@ import {
   MessageSquare,
   Workflow,
   Bot,
+  TerminalSquare,
   Settings,
 } from 'lucide-react';
 
@@ -26,6 +27,7 @@ const navItems: NavItem[] = [
   { view: 'sessions', label: 'Sessions', icon: MessageSquare },
   { view: 'cron', label: 'Cron', icon: Workflow, mobileHidden: true },
   { view: 'agents', label: 'Agents', icon: Bot },
+  { view: 'terminal', label: 'Terminal', icon: TerminalSquare },
   { view: 'settings', label: 'Settings', icon: Settings, bottom: true },
 ];
 

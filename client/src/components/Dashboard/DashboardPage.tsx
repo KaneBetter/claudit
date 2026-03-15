@@ -319,6 +319,19 @@ export default function DashboardPage() {
                     </span>
                   )}
                 </div>
+                {/* ngrok */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={cn(
+                      'w-1.5 h-1.5 rounded-full',
+                      data.systemStatus.ngrokOnline ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]' : 'bg-muted-foreground/30'
+                    )} />
+                    <span className="text-xs text-foreground font-medium">ngrok</span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">
+                    {data.systemStatus.ngrokOnline ? 'Online' : 'Offline'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

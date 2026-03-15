@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type View = 'dashboard' | 'sessions' | 'cron' | 'tasks' | 'agents' | 'settings';
+export type View = 'dashboard' | 'sessions' | 'cron' | 'tasks' | 'agents' | 'terminal' | 'settings';
 
 interface SelectedSession {
   projectHash: string;
