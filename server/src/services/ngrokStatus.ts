@@ -1,6 +1,20 @@
+import http from 'http';
+
 let cachedResult: { ngrokOnline: boolean } = { ngrokOnline: false };
 let lastFetchTime = 0;
 const CACHE_TTL = 10_000; // 10 seconds
+
+function checkNgrok(): Promise<boolean> {
+  return new Promise((resolve) => {
+    const req = http.get('http://localhost:4040/inspect/http', { timeout: 2000 }, (res) => {
+      // Any response means ngrok is running
+      res.resume(); // consume response data
+      resolve(true);
+    });
+    req.on('error', () => resolve(false));
+    req.on('timeout', () => { req.destroy(); resolve(false); });
+  });
+}
 
 export async function getNgrokStatus(): Promise<{ ngrokOnline: boolean }> {
   const now = Date.now();
@@ -8,16 +22,8 @@ export async function getNgrokStatus(): Promise<{ ngrokOnline: boolean }> {
     return cachedResult;
   }
 
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2000);
-    const res = await fetch('http://127.0.0.1:4040/api/tunnels', { signal: controller.signal });
-    clearTimeout(timeout);
-    cachedResult = { ngrokOnline: res.status === 200 };
-  } catch {
-    cachedResult = { ngrokOnline: false };
-  }
-
+  const online = await checkNgrok();
+  cachedResult = { ngrokOnline: online };
   lastFetchTime = now;
   return cachedResult;
 }

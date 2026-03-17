@@ -307,11 +307,11 @@ function spawnShellPty(
 // --- Public handler ---
 
 export function handleTerminalConnection(ws: WebSocket) {
-  console.log('[pty] Client connected');
+  console.log('[pty] Client connected, readyState:', ws.readyState);
   let currentKey: string | null = null;
 
-  ws.on('message', (raw: Buffer) => {
-    const str = raw.toString();
+  ws.on('message', (raw: Buffer | string) => {
+    const str = typeof raw === 'string' ? raw : raw.toString();
 
     let msg: any;
     try {
@@ -326,6 +326,8 @@ export function handleTerminalConnection(ws: WebSocket) {
       }
       return;
     }
+
+    console.log('[pty] Received message type:', msg.type);
 
     switch (msg.type) {
       case 'resume':

@@ -28,6 +28,8 @@ router.get('/', async (_req, res) => {
       };
     }).filter(a => a.runningSessions > 0 || a.waitingSessions > 0);
 
+    const ngrokStatus = await getNgrokStatus();
+
     const data: DashboardData = {
       running: countTasksByStatus('running'),
       waiting: countTasksByStatus('waiting'),
@@ -42,7 +44,7 @@ router.get('/', async (_req, res) => {
         mayorProjectPath: getMayorProjectPath(),
         witnessRunning: isWitnessRunning(),
         witnessLastCheck: getWitnessLastCheck(),
-        ...(await getNgrokStatus()),
+        ngrokOnline: ngrokStatus.ngrokOnline,
       },
     };
 
