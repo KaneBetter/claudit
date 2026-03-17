@@ -4,6 +4,8 @@ import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { TerminalSquare } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { getTerminalTheme } from '../../lib/terminalThemes';
+import { useResolvedTheme } from '../../hooks/useThemeEffect';
 import '@xterm/xterm/css/xterm.css';
 
 const CTRL_PREFIX = '\x00';
@@ -15,6 +17,14 @@ export default function TerminalPage() {
   const fitAddonRef = useRef<FitAddon | null>(null);
   const [status, setStatus] = useState<'connecting' | 'connected' | 'exited' | 'error'>('connecting');
   const [termReady, setTermReady] = useState(false);
+  const resolvedTheme = useResolvedTheme();
+
+  // Update terminal theme when resolved theme changes
+  useEffect(() => {
+    if (termRef.current) {
+      termRef.current.options.theme = getTerminalTheme(resolvedTheme);
+    }
+  }, [resolvedTheme]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -23,29 +33,7 @@ export default function TerminalPage() {
       cursorBlink: true,
       fontSize: 13,
       fontFamily: 'Menlo, Monaco, "Courier New", monospace',
-      theme: {
-        background: '#f8f8f8',
-        foreground: '#1e1e1e',
-        cursor: '#d97756',
-        cursorAccent: '#ffffff',
-        selectionBackground: 'rgba(217,119,86,0.2)',
-        black: '#1e1e1e',
-        red: '#cd3131',
-        green: '#008000',
-        yellow: '#795e26',
-        blue: '#0451a5',
-        magenta: '#af00db',
-        cyan: '#0598bc',
-        white: '#6a737d',
-        brightBlack: '#6a737d',
-        brightRed: '#cd3131',
-        brightGreen: '#008000',
-        brightYellow: '#795e26',
-        brightBlue: '#0451a5',
-        brightMagenta: '#af00db',
-        brightCyan: '#0598bc',
-        brightWhite: '#1e1e1e',
-      },
+      theme: getTerminalTheme(resolvedTheme),
       allowProposedApi: true,
     });
 

@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import NavSidebar from './components/NavSidebar';
 import { useSystemNotifications } from './hooks/useSystemNotifications';
 import { useURLParams } from './hooks/useURLParams';
+import { useThemeEffect } from './hooks/useThemeEffect';
 import SessionList from './components/SessionList/SessionList';
 import SessionDetail from './components/SessionDetail/SessionDetail';
 import EmptyState from './components/SessionDetail/EmptyState';
@@ -166,6 +167,7 @@ export default function App() {
 
   useSystemNotifications();
   useURLParams();
+  useThemeEffect();
 
   return (
     <>
@@ -181,9 +183,9 @@ export default function App() {
         duration={10000}
         toastOptions={{
           style: {
-            background: 'hsl(0 0% 100% / 0.95)',
-            border: '1px solid hsl(220 9% 88% / 0.5)',
-            color: 'hsl(220 9% 15%)',
+            background: 'hsl(var(--card) / 0.95)',
+            border: '1px solid hsl(var(--border) / 0.5)',
+            color: 'hsl(var(--foreground))',
             backdropFilter: 'blur(12px)',
           },
         }}

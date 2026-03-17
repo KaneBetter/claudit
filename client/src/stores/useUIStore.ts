@@ -41,6 +41,8 @@ export interface CronDraft {
   enabled: boolean;
 }
 
+export type Theme = 'light' | 'dark' | 'system';
+
 interface UIState {
   view: View;
   selected: SelectedSession | null;
@@ -56,10 +58,12 @@ interface UIState {
   taskDraft: TaskDraft | null;
   cronDraft: CronDraft | null;
   sidebarCollapsed: boolean;
+  theme: Theme;
 
   setView: (view: View) => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
   toggleSidebar: () => void;
+  setTheme: (theme: Theme) => void;
   selectSession: (projectHash: string, sessionId: string, projectPath: string, isNew?: boolean, slug?: string, slugSessionIds?: string[]) => void;
   clearSelected: () => void;
   setSelectedCronTaskId: (id: string | null) => void;
@@ -92,10 +96,12 @@ export const useUIStore = create<UIState>()(
       taskDraft: null,
       cronDraft: null,
       sidebarCollapsed: false,
+      theme: 'system',
 
       setView: (view) => set({ view }),
       setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
       toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
+      setTheme: (theme) => set({ theme }),
       selectSession: (projectHash, sessionId, projectPath, isNew, slug, slugSessionIds) =>
         set({ selected: { projectHash, sessionId, projectPath, isNew, slug, slugSessionIds } }),
       clearSelected: () => set({ selected: null }),
@@ -126,6 +132,7 @@ export const useUIStore = create<UIState>()(
         taskDraft: state.taskDraft,
         cronDraft: state.cronDraft,
         sidebarCollapsed: state.sidebarCollapsed,
+        theme: state.theme,
       }),
     },
   ),

@@ -20,6 +20,7 @@ Thumbs.db
 
 # Claude Code
 .claude/
+!.claude/plan/
 
 # Build artifacts
 *.tgz

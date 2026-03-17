@@ -28,6 +28,30 @@
     --radius: 0.75rem;
   }
 
+  .dark {
+    --background: 220 10% 8%;
+    --foreground: 220 9% 88%;
+    --card: 220 10% 11%;
+    --card-foreground: 220 9% 88%;
+    --panel: 220 10% 12%;
+    --panel-elevated: 220 10% 14%;
+    --popover: 220 10% 10%;
+    --popover-foreground: 220 9% 88%;
+    --primary: 18 62% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 10% 18%;
+    --secondary-foreground: 220 9% 75%;
+    --muted: 220 10% 18%;
+    --muted-foreground: 220 6% 55%;
+    --accent: 220 10% 18%;
+    --accent-foreground: 220 9% 88%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 10% 20%;
+    --input: 220 10% 20%;
+    --ring: 18 62% 55%;
+  }
+
   * {
     @apply border-border;
   }
@@ -44,7 +68,7 @@
   scrollbar-color: transparent transparent;
 }
 *:hover {
-  scrollbar-color: hsl(0 0% 78%) transparent;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
 }
 ::-webkit-scrollbar {
   width: 4px;
@@ -58,19 +82,19 @@
   border-radius: 2px;
 }
 *:hover::-webkit-scrollbar-thumb {
-  background: hsl(0 0% 78%);
+  background: hsl(var(--muted-foreground) / 0.3);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(0 0% 68%);
+  background: hsl(var(--muted-foreground) / 0.5);
 }
 
 /* Markdown code blocks */
 .prose pre {
-  background: hsl(220 9% 96%) !important;
+  background: hsl(var(--panel)) !important;
   border-radius: 8px;
   padding: 1rem;
   overflow-x: auto;
-  border: 1px solid hsl(220 9% 88% / 0.6);
+  border: 1px solid hsl(var(--border) / 0.6);
 }
 
 .prose code {
@@ -78,7 +102,7 @@
 }
 
 .prose p code {
-  background: hsl(220 9% 94% / 0.8);
+  background: hsl(var(--muted) / 0.8);
   padding: 0.125rem 0.375rem;
   border-radius: 4px;
   font-size: 0.875rem;
@@ -154,7 +178,7 @@
 
 /* Subtle gradient cards */
 .gradient-card {
-  background: linear-gradient(135deg, hsl(220 9% 97%) 0%, hsl(220 9% 95%) 100%);
+  background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--panel)) 100%);
 }
 
 /* Status glow effects */

@@ -3,8 +3,10 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { MergedSessionDetail, ParsedMessage } from '../../types';
 import { fetchMergedSessionDetail } from '../../api/sessions';
+import { useResolvedTheme } from '../../hooks/useThemeEffect';
 
 const INITIAL_COUNT = 100;
 const LOAD_MORE_COUNT = 100;
@@ -14,7 +16,7 @@ interface Props {
   slug: string;
 }
 
-const MessageBubble = memo(function MessageBubble({ message }: { message: ParsedMessage }) {
+const MessageBubble = memo(function MessageBubble({ message, codeStyle }: { message: ParsedMessage; codeStyle: Record<string, React.CSSProperties> }) {
   const isUser = message.role === 'user';
   const textContent = message.content
     .filter(b => b.type === 'text' && b.text)
@@ -35,7 +37,7 @@ const MessageBubble = memo(function MessageBubble({ message }: { message: Parsed
         {isUser ? (
           <div className="whitespace-pre-wrap break-words">{textContent}</div>
         ) : (
-          <div className="prose prose-invert prose-sm max-w-none break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+          <div className="prose prose-sm max-w-none break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
@@ -45,7 +47,7 @@ const MessageBubble = memo(function MessageBubble({ message }: { message: Parsed
                   if (match) {
                     return (
                       <SyntaxHighlighter
-                        style={oneDark}
+                        style={codeStyle}
                         language={match[1]}
                         PreTag="div"
                         customStyle={{ margin: 0, borderRadius: '0.375rem', fontSize: '0.8rem' }}
@@ -84,6 +86,8 @@ function SessionBoundary({ index }: { index: number }) {
 }
 
 export default function ConversationView({ projectHash, slug }: Props) {
+  const resolvedTheme = useResolvedTheme();
+  const codeStyle = resolvedTheme === 'dark' ? oneDark : oneLight;
   const [data, setData] = useState<MergedSessionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -214,7 +218,7 @@ export default function ConversationView({ projectHash, slug }: Props) {
             {boundarySet.has(globalIndex) && globalIndex > 0 && (
               <SessionBoundary index={data.sessionBoundaries.indexOf(globalIndex)} />
             )}
-            <MessageBubble message={msg} />
+            <MessageBubble message={msg} codeStyle={codeStyle} />
           </div>
         );
       })}

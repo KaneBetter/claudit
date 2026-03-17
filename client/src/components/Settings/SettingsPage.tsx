@@ -1,11 +1,51 @@
 import { useState, useEffect } from 'react';
 import { ClauditConfig } from '../../types';
 import { fetchSettings, updateSettings } from '../../api/settings';
+import { useUIStore, Theme } from '../../stores/useUIStore';
 import { cn } from '../../lib/utils';
 import {
   Settings, Bell, AlertTriangle, Save, Loader2, CheckCircle2, Trash2,
-  Monitor, Shield, Timer,
+  Monitor, Shield, Timer, Palette,
 } from 'lucide-react';
+
+function AppearanceSection() {
+  const theme = useUIStore(s => s.theme);
+  const setTheme = useUIStore(s => s.setTheme);
+
+  const options: { value: Theme; label: string }[] = [
+    { value: 'system', label: 'System' },
+    { value: 'light', label: 'Light' },
+    { value: 'dark', label: 'Dark' },
+  ];
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-6">
+      <div className="flex items-center gap-2 mb-5">
+        <Palette className="w-4 h-4 text-primary" />
+        <h2 className="text-base font-semibold text-foreground">Appearance</h2>
+      </div>
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-foreground mb-1.5">Theme</label>
+        <div className="flex gap-2">
+          {options.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => setTheme(opt.value)}
+              className={cn(
+                'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                theme === opt.value
+                  ? 'bg-primary/15 text-primary border border-primary/30'
+                  : 'bg-secondary/50 text-muted-foreground border border-border hover:text-foreground hover:bg-accent'
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function SettingsPage() {
   const [config, setConfig] = useState<ClauditConfig | null>(null);
@@ -57,6 +97,9 @@ export default function SettingsPage() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Configure your Claudit workspace</p>
         </div>
+
+        {/* Appearance */}
+        <AppearanceSection />
 
         {/* General */}
         <div className="rounded-xl border border-border bg-card p-6">

@@ -1,5 +1,6 @@
-import { useUIStore, View } from '../stores/useUIStore';
+import { useUIStore, View, Theme } from '../stores/useUIStore';
 import { useNavCollapsed } from './Layout';
+import { useResolvedTheme } from '../hooks/useThemeEffect';
 import { cn } from '../lib/utils';
 import {
   LayoutDashboard,
@@ -9,6 +10,8 @@ import {
   Bot,
   TerminalSquare,
   Settings,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 export type { View };
@@ -86,6 +89,41 @@ function MobileNavButton({ item, active, onClick }: {
   );
 }
 
+function ThemeToggle({ collapsed }: { collapsed: boolean }) {
+  const theme = useUIStore(s => s.theme);
+  const setTheme = useUIStore(s => s.setTheme);
+  const resolved = useResolvedTheme();
+  const isDark = resolved === 'dark';
+
+  const cycle = () => {
+    const next: Record<Theme, Theme> = { light: 'dark', dark: 'system', system: 'light' };
+    setTheme(next[theme]);
+  };
+
+  const Icon = isDark ? Moon : Sun;
+  const label = theme === 'system' ? 'System' : isDark ? 'Dark' : 'Light';
+
+  return (
+    <button
+      onClick={cycle}
+      className={cn(
+        'group relative flex items-center py-2 rounded-lg text-sm font-medium overflow-hidden transition-all duration-150',
+        collapsed ? 'justify-center px-2' : 'gap-2.5 px-3',
+        'text-muted-foreground hover:text-foreground hover:bg-accent'
+      )}
+      title={`Theme: ${label}`}
+    >
+      <Icon className="flex-shrink-0 transition-colors text-muted-foreground group-hover:text-foreground" size={18} />
+      <span className={cn(
+        'truncate whitespace-nowrap transition-all duration-150',
+        collapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+      )}>
+        {label}
+      </span>
+    </button>
+  );
+}
+
 export default function NavSidebar() {
   const view = useUIStore(s => s.view);
   const setView = useUIStore(s => s.setView);
@@ -148,6 +186,7 @@ export default function NavSidebar() {
 
       {/* Bottom nav */}
       <div className="flex flex-col gap-0.5">
+        <ThemeToggle collapsed={collapsed} />
         {bottomItems.map(item => (
           <NavButton
             key={item.view}
