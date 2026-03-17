@@ -23,8 +23,12 @@ import {
   TrendingUp,
   FolderOpen,
   Plus,
+  Pencil,
 } from 'lucide-react';
 import FolderBrowser from '../FolderBrowser';
+import ProjectEditModal from './ProjectEditModal';
+import TokenUsageChart from './TokenUsageChart';
+import { formatTokens, formatCost } from '../../lib/format';
 
 function StatRing({ value, max, color }: { value: number; max: number; color: string }) {
   const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
@@ -61,6 +65,7 @@ export default function DashboardPage() {
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectPath, setNewProjectPath] = useState('');
   const [addingProject, setAddingProject] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const setView = useUIStore(s => s.setView);
 
   const load = useCallback(async () => {
@@ -247,13 +252,11 @@ export default function DashboardPage() {
                 <Zap className="w-4 h-4 text-primary" />
               </div>
               <div className="text-3xl font-bold text-foreground tracking-tight">
-                {data.tokenUsageToday >= 1000
-                  ? `${(data.tokenUsageToday / 1000).toFixed(1)}k`
-                  : data.tokenUsageToday.toLocaleString()}
+                {formatTokens(data.tokenUsageToday)}
               </div>
               <div className="flex items-center gap-1 mt-2">
                 <TrendingUp className="w-3 h-3 text-primary" />
-                <span className="text-[11px] text-primary font-medium">Active usage</span>
+                <span className="text-[11px] text-primary font-medium">{formatCost(data.tokenCostToday)}</span>
               </div>
             </div>
 
@@ -337,6 +340,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Token Usage Chart */}
+        <TokenUsageChart />
+
         {/* Project Folders */}
         <div>
           <div className="flex items-center justify-between mb-3">
@@ -392,24 +398,33 @@ export default function DashboardPage() {
                     key={project.id}
                     onClick={() => setSelectedProjectId(isSelected ? null : project.id)}
                     className={cn(
-                      'rounded-2xl text-left transition-all duration-200 overflow-hidden backdrop-blur-sm',
+                      'rounded-2xl text-left transition-all duration-200 overflow-hidden backdrop-blur-sm group',
                       isSelected
                         ? 'bg-white/15 shadow-lg shadow-white/5 ring-1 ring-white/20'
                         : 'bg-white/[0.06] hover:bg-white/[0.09] border border-white/[0.08] hover:border-white/[0.14]'
                     )}
                   >
-                    {/* Header — title + count badge */}
+                    {/* Header — title + count badge + edit */}
                     <div className="flex items-start justify-between px-4 pt-3.5 pb-2">
                       <div className="min-w-0 flex-1 mr-2">
                         <div className="text-[13px] font-semibold text-foreground truncate">{project.name}</div>
                         <div className="text-[10px] text-muted-foreground/50 mt-0.5">{pathShort}</div>
                       </div>
-                      <span className={cn(
-                        'text-[11px] font-medium px-1.5 py-0.5 rounded-md flex-shrink-0 tabular-nums',
-                        isSelected ? 'bg-white/20 text-white' : 'bg-white/[0.08] text-muted-foreground'
-                      )}>
-                        {taskCount}
-                      </span>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button
+                          onClick={e => { e.stopPropagation(); setEditingProject(project); }}
+                          className="w-5 h-5 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-white/15 transition-all"
+                          title="Edit project"
+                        >
+                          <Pencil className="w-3 h-3 text-muted-foreground" />
+                        </button>
+                        <span className={cn(
+                          'text-[11px] font-medium px-1.5 py-0.5 rounded-md tabular-nums',
+                          isSelected ? 'bg-white/20 text-white' : 'bg-white/[0.08] text-muted-foreground'
+                        )}>
+                          {taskCount}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Stacked cards area */}
@@ -615,6 +630,15 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Project Edit Modal */}
+      {editingProject && (
+        <ProjectEditModal
+          project={editingProject}
+          onClose={() => setEditingProject(null)}
+          onSaved={loadProjects}
+        />
+      )}
     </div>
   );
 }

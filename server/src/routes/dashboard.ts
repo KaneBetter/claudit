@@ -6,7 +6,8 @@ import {
   getRecentTasks,
   getTasksByAssignee,
 } from '../services/taskStorage.js';
-import { getTokenUsageToday } from '../services/tokenTracker.js';
+import { getTokenUsageToday, getTokenUsageAll, getTokenCostToday, getTokenUsageTimeSeries } from '../services/tokenTracker.js';
+import { scanAllSessions } from '../services/tokenScanner.js';
 import { getAllAgents } from '../services/agentStorage.js';
 import { isMayorOnline, isMayorEnabled, setMayorEnabled, ensureMayorRunning, stopMayor, getMayorSessionId, getMayorProjectPath, sendToMayor } from '../services/mayorService.js';
 import { isWitnessRunning, getWitnessLastCheck } from '../services/witnessService.js';
@@ -36,6 +37,7 @@ router.get('/', async (_req, res) => {
       doneToday: getTasksCompletedToday().length,
       failed: countTasksByStatus('failed'),
       tokenUsageToday: getTokenUsageToday(),
+      tokenCostToday: getTokenCostToday(),
       recentTasks: getRecentTasks(10),
       activeAgents,
       systemStatus: {
@@ -113,6 +115,42 @@ router.post('/mayor/message', async (req, res) => {
   } catch (err: any) {
     console.error('[dashboard] Failed to send message to mayor:', err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/dashboard/token-usage — debug endpoint for token usage stats
+router.get('/token-usage', (_req, res) => {
+  try {
+    const today = getTokenUsageToday();
+    const all = getTokenUsageAll();
+    res.json({ today, allTime: all.total, recordCount: all.count });
+  } catch (err) {
+    console.error('Error fetching token usage:', err);
+    res.status(500).json({ error: 'Failed to fetch token usage' });
+  }
+});
+
+// GET /api/dashboard/token-usage/history?hours=24 — time-series token usage
+router.get('/token-usage/history', (req, res) => {
+  try {
+    const hours = Math.min(Math.max(parseInt(req.query.hours as string) || 24, 1), 720);
+    const points = getTokenUsageTimeSeries(hours);
+    res.json({ hours, points });
+  } catch (err) {
+    console.error('Error fetching token usage history:', err);
+    res.status(500).json({ error: 'Failed to fetch token usage history' });
+  }
+});
+
+// POST /api/dashboard/token-usage/scan — trigger a manual token usage scan
+router.post('/token-usage/scan', (_req, res) => {
+  try {
+    const inserted = scanAllSessions();
+    const all = getTokenUsageAll();
+    res.json({ inserted, allTime: all.total, recordCount: all.count });
+  } catch (err) {
+    console.error('Error scanning token usage:', err);
+    res.status(500).json({ error: 'Failed to scan token usage' });
   }
 });
 

@@ -209,6 +209,10 @@ export class ClaudeProcess extends EventEmitter {
       }
 
       case 'result':
+        // Extract token usage from result event — try multiple locations
+        this._recordUsageFromEvent(event.usage || event.modelUsage);
+        console.log(`[claude] Result: subtype=${event.subtype} tokens=${this.getTokenUsage()} hasUsage=${!!event.usage} result=${String(event.result).slice(0, 100)}`);
+
         if (!this.userMessageSent) {
           console.log('[claude] Resume replay complete, CLI ready for input');
           this.resumeReady = true;
@@ -225,25 +229,6 @@ export class ClaudeProcess extends EventEmitter {
         if (event.result && typeof event.result === 'string' && this.lastTextLength === 0) {
           this.emit('assistant_text', event.result);
         }
-        // Accumulate token usage from each turn's result
-        if (event.usage) {
-          const input = event.usage.input_tokens || 0;
-          const output = event.usage.output_tokens || 0;
-          const cacheCreation = event.usage.cache_creation_input_tokens || 0;
-          const cacheRead = event.usage.cache_read_input_tokens || 0;
-          this._totalInputTokens += input;
-          this._totalOutputTokens += output;
-          this._totalCacheCreationTokens += cacheCreation;
-          this._totalCacheReadTokens += cacheRead;
-          recordTokenUsage({
-            sessionId: this.sessionId,
-            inputTokens: input,
-            outputTokens: output,
-            cacheCreationTokens: cacheCreation,
-            cacheReadTokens: cacheRead,
-          });
-        }
-        console.log(`[claude] Result: subtype=${event.subtype} tokens=${this.getTokenUsage()} result=${String(event.result).slice(0, 100)}`);
         this.emit('done');
         break;
 
@@ -292,6 +277,56 @@ export class ClaudeProcess extends EventEmitter {
     }) + '\n';
     console.log(`[claude] Sending to stdin: ${msg.trim().slice(0, 200)}`);
     this.proc.stdin.write(msg);
+  }
+
+  private _recordUsageFromEvent(usage: any): void {
+    if (!usage) return;
+
+    // Handle flat usage object (from result events)
+    // Fields: input_tokens, output_tokens, cache_creation_input_tokens, cache_read_input_tokens
+    const input = usage.input_tokens || 0;
+    const output = usage.output_tokens || 0;
+    const cacheCreation = usage.cache_creation_input_tokens || 0;
+    const cacheRead = usage.cache_read_input_tokens || 0;
+
+    if (input === 0 && output === 0 && cacheCreation === 0 && cacheRead === 0) {
+      // Try modelUsage format (nested by model name, camelCase fields)
+      const modelKey = typeof usage === 'object' ? Object.keys(usage).find(k => k.includes('claude')) : null;
+      if (modelKey) {
+        const mu = usage[modelKey];
+        const mInput = mu.inputTokens || 0;
+        const mOutput = mu.outputTokens || 0;
+        const mCacheCreation = mu.cacheCreationInputTokens || 0;
+        const mCacheRead = mu.cacheReadInputTokens || 0;
+        if (mInput + mOutput + mCacheCreation + mCacheRead > 0) {
+          this._totalInputTokens += mInput;
+          this._totalOutputTokens += mOutput;
+          this._totalCacheCreationTokens += mCacheCreation;
+          this._totalCacheReadTokens += mCacheRead;
+          recordTokenUsage({
+            sessionId: this.sessionId,
+            inputTokens: mInput,
+            outputTokens: mOutput,
+            cacheCreationTokens: mCacheCreation,
+            cacheReadTokens: mCacheRead,
+          });
+        }
+        return;
+      }
+      return;
+    }
+
+    this._totalInputTokens += input;
+    this._totalOutputTokens += output;
+    this._totalCacheCreationTokens += cacheCreation;
+    this._totalCacheReadTokens += cacheRead;
+    recordTokenUsage({
+      sessionId: this.sessionId,
+      inputTokens: input,
+      outputTokens: output,
+      cacheCreationTokens: cacheCreation,
+      cacheReadTokens: cacheRead,
+    });
   }
 
   getTokenUsage(): number {

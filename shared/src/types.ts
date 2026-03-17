@@ -225,12 +225,22 @@ export interface ClauditConfig {
 
 // --- Dashboard Types ---
 
+export interface TokenUsagePoint {
+  time: string;
+  inputTokens: number;
+  outputTokens: number;
+  cacheTokens: number;
+  totalTokens: number;
+  costUSD: number;
+}
+
 export interface DashboardData {
   running: number;
   waiting: number;
   doneToday: number;
   failed: number;
   tokenUsageToday: number;
+  tokenCostToday: number;
   recentTasks: Task[];
   activeAgents: {
     agent: Agent;

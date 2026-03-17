@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import { ClaudeProcess, CLAUDE_BIN } from './claudeProcess.js';
 import { getSetting, setSetting } from './settingsStorage.js';
 import { PROJECTS_DIR, readHistoryEntries } from './sessionScanner.js';
+import { recordTokenUsage } from './tokenTracker.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -193,6 +194,18 @@ function createNewMayorSession(): Promise<string> {
       for (const line of lines) {
         try {
           const parsed = JSON.parse(line);
+          // Record token usage from the one-shot session creation
+          if (parsed.session_id && parsed.usage) {
+            const u = parsed.usage;
+            console.log(`[mayor] One-shot session ${parsed.session_id.slice(0, 8)}... usage: in=${u.input_tokens} out=${u.output_tokens}`);
+            recordTokenUsage({
+              sessionId: parsed.session_id,
+              inputTokens: u.input_tokens || 0,
+              outputTokens: u.output_tokens || 0,
+              cacheCreationTokens: u.cache_creation_input_tokens || 0,
+              cacheReadTokens: u.cache_read_input_tokens || 0,
+            });
+          }
           if (parsed.session_id) {
             console.log(`[mayor] Created new session: ${parsed.session_id}`);
             return resolve(parsed.session_id);

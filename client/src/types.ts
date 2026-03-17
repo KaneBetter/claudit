@@ -17,6 +17,7 @@ export type {
   ClauditConfig,
   Checkpoint,
   DashboardData,
+  TokenUsagePoint,
 } from '@shared/types.js';
 
 // Client-only types

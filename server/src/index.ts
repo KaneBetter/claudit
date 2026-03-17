@@ -23,6 +23,7 @@ try {
 }
 import { eventBus } from './services/eventBus.js';
 import { closeDb } from './services/database.js';
+import { startTokenScanner, stopTokenScanner } from './services/tokenScanner.js';
 import { startWitness, stopWitness, witnessEmitter } from './services/witnessService.js';
 import { ensureMayorRunning, stopMayor, sendToMayor, isMayorEnabled } from './services/mayorService.js';
 import { updateTask, getTask, getAllTasks } from './services/taskStorage.js';
@@ -251,6 +252,7 @@ server.listen(PORT, () => {
 `);
   initScheduler();
   startWitness();
+  startTokenScanner();
 
   // Mayor is disabled by default — user must start it manually from the dashboard
 
@@ -346,6 +348,7 @@ server.listen(PORT, () => {
   for (const sig of ['SIGTERM', 'SIGINT'] as const) {
     process.on(sig, () => {
       clearInterval(patrolTimer);
+      stopTokenScanner();
       stopAllAgentSessions();
       stopWitness();
       stopMayor();
